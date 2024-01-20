@@ -81,9 +81,9 @@ esac
 
 # Displaying colored message before running the command
 print_message "${GREEN}" "Running command..."
-ports=(21 22 25 443 1500 3306 8083)
+ports=(21 22 25 80 443 1500 3306 8083)
 for port in "${ports[@]}"; do
     count=$(ss -an | grep ":$port " | wc -l)
-    echo "Port $port: $count"
+    echo "Port $port: ${YELLOW}$count${RESET}"
 done
 ss -utplns
