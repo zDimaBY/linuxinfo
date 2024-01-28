@@ -86,9 +86,9 @@ checkInfoServerAndControlPanel() {
     load_average=${load_average%,*}
     load_average=$(echo "${load_average/,/.}")
 
-    if (($(echo "$load_average < 2" | bc -l))); then
+    if (($(awk 'BEGIN {print ($load_average < 2)}'))); then
         load_average="${GREEN}$load_average${RESET}"
-    elif (($(echo "$load_average < 5" | bc -l))); then
+    elif (($(awk 'BEGIN {print ($load_average < 5)}'))); then
         load_average="${YELLOW}$load_average${RESET}"
     else
         load_average="${RED}$load_average (!)${RESET}"
@@ -134,12 +134,27 @@ checkInfoServerAndControlPanel() {
 # Display OS information and check control panel
 checkInfoServerAndControlPanel
 
-# Display colored message before running the command
-print_message "${GREEN}" "Running command..."
-ports=(21 22 25 80 443 1500 3306 8083)
+if command -v mysql >/dev/null 2>&1; then
+    print_message "${YELLOW}" "MySQL ${GREEN}$(mysql -V)"
+elif command -v mariadb >/dev/null 2>&1; then
+    print_message "${YELLOW}" "MariaDB ${GREEN}$(mariadb -V)"
+else
+    print_message "${RED}" "MySQL, MariaDB is not installed."
+fi
+
+if command -v php >/dev/null 2>&1; then
+    print_message "${YELLOW}" "PHP ${GREEN}$(php -v | grep -Eo 'PHP ([0-9]\.[0-9]+\.[0-9]+)')"
+else
+    print_message "${RED}" "PHP is not installed."
+fi
+
+ports=(21 22 25 80 443 1194 1500 3306 8083 8888)
+echo "ss -an port 21 22 25 80 443 1194 1500 3306 8083 8888"
 for port in "${ports[@]}"; do
     count=$(ss -an | grep ":$port " | wc -l)
-    echo -e "Port $port: ${YELLOW}$count${RESET}"
+    if [[ $count -ne 0 ]]; then
+        echo -e "Port $port: ${YELLOW}$count${RESET}"
+    fi
 done
 ss -plns
-ss -utpl | tr -d '\t' | column -t
+ss -utnpl | tr -d '\t' | column -t
