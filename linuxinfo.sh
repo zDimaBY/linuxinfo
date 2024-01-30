@@ -1,17 +1,23 @@
 #!/bin/bash
 
-# Color codes
-BLACK="\e[30m"
-RED="\e[31m"
-GREEN="\e[32m"
-YELLOW="\e[33m"
-BLUE="\e[34m"
-MAGENTA="\e[35m"
-CYAN="\e[36m"
-WHITE="\e[37m"
-LIGHT_GREEN="\e[92m"
-BROWN='\033[0;33m'
-RESET="\e[0m"
+# Text color codes
+BLACK="\033[30m"
+RED="\033[31m"
+GREEN="\033[32m"
+YELLOW="\033[33m"
+BLUE="\033[34m"
+MAGENTA="\033[35m"
+CYAN="\033[36m"
+LIGHT_GRAY="\033[37m"
+DARK_GRAY="\033[90m"
+LIGHT_RED="\033[91m"
+LIGHT_GREEN="\033[92m"
+ORANGE="\033[93m"
+LIGHT_BLUE="\033[94m"
+PURPLE="\033[95m"
+LIGHT_CYAN="\033[96m"
+WHITE="\033[97m"
+RESET="\033[0m"
 
 # Function to display colored messages
 print_message() {
@@ -36,19 +42,19 @@ else
     case "$(uname -s)" in
     Linux)
         if [ -x "$(command -v apt-get)" ]; then
-            print_message "${RED}" "On ${YELLOW}Debian or Ubuntu${RED}:"
+            print_message "${RED}" "On ${ORANGE}Debian or Ubuntu${RED}:"
             print_message "${RED}" "sudo apt-get update && sudo apt-get install lsb-release"
         elif [ -x "$(command -v yum)" ]; then
-            print_message "${RED}" "On ${YELLOW}Red Hat-based${RED} systems:"
+            print_message "${RED}" "On ${ORANGE}Red Hat-based${RED} systems:"
             print_message "${RED}" "sudo yum install redhat-lsb-core"
         elif [ -x "$(command -v dnf)" ]; then
-            print_message "${RED}" "On ${YELLOW}AlmaLinux${RED}:"
+            print_message "${RED}" "On ${ORANGE}AlmaLinux${RED}:"
             print_message "${RED}" "sudo dnf install redhat-lsb-core"
         elif [ -x "$(command -v zypper)" ]; then
-            print_message "${RED}" "On ${YELLOW}SUSE${RED}:"
+            print_message "${RED}" "On ${ORANGE}SUSE${RED}:"
             print_message "${RED}" "sudo zypper install lsb-release"
         elif [ -x "$(command -v pacman)" ]; then
-            print_message "${RED}" "On ${YELLOW}Arch Linux${RED}:"
+            print_message "${RED}" "On ${ORANGE}Arch Linux${RED}:"
             print_message "${RED}" "sudo pacman -S lsb-release"
         else
             print_message "${RED}" "Unsupported package manager. Please install lsb-release manually."
@@ -62,16 +68,14 @@ else
     exit 1
 fi
 
-# Source /etc/os-release
 source "/etc/os-release"
-
 # Check if the OS is supported
 case "${ID}" in
 "debian" | "ubuntu")
-    print_message "${GREEN}" "Detected Operating System: ${YELLOW}${ID} ${VERSION_ID}${GREEN}"
+    print_message "${GREEN}" "You have a system installed: ${YELLOW}${ID} ${VERSION_ID}${GREEN}"
     ;;
 "rhel" | "almalinux" | "eurolinux" | "rocky" | "centos")
-    print_message "${GREEN}" "Detected Operating System: ${YELLOW}${ID} ${VERSION_ID}${RED} (Red Hat-based system)."
+    print_message "${GREEN}" "You have a system installed: ${YELLOW}${ID} ${VERSION_ID}${RED} (Red Hat-based system)."
     ;;
 *)
     print_message "${RED}" "Your operating system is not officially supported."
@@ -95,7 +99,7 @@ checkInfoServerAndControlPanel() {
     fi
 
     largest_disk=$(df -h | grep '^/dev/' | sort -k 4 -hr | head -n 1)
-    disk_usage=$(echo "$largest_disk" | awk '{print $5}') # Использование места на самом большом диске
+    disk_usage=$(echo "$largest_disk" | awk '{print $5}')
     echo -e "Load Average: $load_average Disk Usage: $disk_usage"
 
     server_hostname=$(hostname)
@@ -148,6 +152,12 @@ else
     print_message "${RED}" "PHP is not installed."
 fi
 
+if command -v docker >/dev/null 2>&1; then
+    print_message "${BLUE}" "$(docker -v) ${YELLOW}\n$(docker ps)"
+else
+    print_message "${RED}" "Docker is not installed."
+fi
+
 ports=(21 22 25 80 443 1194 1500 3306 8083 8888)
 echo "ss -an port 21 22 25 80 443 1194 1500 3306 8083 8888"
 for port in "${ports[@]}"; do
@@ -157,4 +167,4 @@ for port in "${ports[@]}"; do
     fi
 done
 ss -plns
-ss -utnpl | tr -d '\t' | column -t
+ss -utnpl | awk '{printf "%-6s %-6s %-7s %-7s %-42s %-42s %-s\n", $1, $2, $3, $4, $5, $6, $7}'
