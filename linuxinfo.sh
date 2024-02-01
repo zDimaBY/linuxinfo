@@ -141,12 +141,10 @@ if command -v docker >/dev/null 2>&1; then
 else
     print_color_message 200 0 0 "Docker is not installed."
 fi
-
-ports=(21 22 25 80 443 1194 1500 3306 8083 8888)
-echo "ss -an port 21 22 25 80 443 1194 1500 3306 8083 8888"
-for port in "${ports[@]}"; do
+ports=$(ss -tuln | awk 'NR>1 {print $5}' | cut -d ':' -f 2 | sort -n | uniq)
+for port in $ports; do
     count=$(ss -an | grep ":$port " | wc -l)
-    if [[ $count -ne 0 ]]; then
+    if [[ $count -ge 3 ]]; then
         echo -e "Port $port: $(print_color_message 200 165 0 "$count")"
     fi
 done
