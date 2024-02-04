@@ -89,7 +89,7 @@ checkInfoServerAndControlPanel() {
     server_IP=$(hostname -I | awk '{print $1}')
     echo -e "Hostname: $(print_color_message 0 200 0 "$server_hostname") IP: $(print_color_message 0 200 0 "$server_IP")"
 
-    for panel_dir in "/usr/local/hestia" "/usr/local/vesta" "/usr/local/mgr5" "/usr/local/cpanel"; do
+    for panel_dir in "/usr/local/hestia" "/usr/local/vesta" "/usr/local/mgr5" "/usr/local/cpanel" "/usr/local/fastpanel2"; do
         if [ -d "$panel_dir" ]; then
             case $panel_dir in
             "/usr/local/hestia")
@@ -109,6 +109,15 @@ checkInfoServerAndControlPanel() {
                 "$panel_dir/cpanel" -V
                 cat /etc/*release
                 ;;
+            "/usr/local/fastpanel2")
+                fastuser_passwd_dir="/usr/local/fastpanel2/app/config/.my.cnf"
+                print_color_message 0 150 230 "FastPanel is installed."
+                if [ -f $fastuser_passwd_dir ]; then
+                    cat "$fastuser_passwd_dir" | tr '\n' ' ' && echo
+                else
+                    print_color_message 200 0 0 "File $fastuser_passwd_dir not found."
+                fi
+                ;;
             esac
 
             source /etc/os-release
@@ -116,17 +125,30 @@ checkInfoServerAndControlPanel() {
         fi
     done
     print_color_message 200 0 0 "Control panel not found."
+
 }
 
 # Display OS information and check control panel
 checkInfoServerAndControlPanel
 
 if command -v mysql >/dev/null 2>&1; then
-    print_color_message 200 165 0 "MySQL $(print_color_message 0 117 143 "$(mysql -V)")"
-elif command -v mariadb >/dev/null 2>&1; then
-    print_color_message 200 165 0 "MariaDB $(print_color_message 0 117 143 "$(mariadb -V)")"
-else
-    print_color_message 200 0 0 "MySQL, MariaDB is not installed."
+    print_color_message 0 200 0 "MySQL $(print_color_message 0 117 143 "$(mysql -V)")"
+fi
+
+if command -v mariadb >/dev/null 2>&1; then
+    print_color_message 0 200 0 "MariaDB $(print_color_message 0 117 143 "$(mariadb -V)")"
+fi
+
+if command -v psql >/dev/null 2>&1; then
+    print_color_message 0 200 0 "PostgreSQL $(print_color_message 0 117 143 "$(psql --version)")"
+fi
+
+if command -v sqlite3 >/dev/null 2>&1; then
+    print_color_message 0 200 0 "SQLite $(print_color_message 0 117 143 "$(sqlite3 --version)")"
+fi
+
+if ! command -v mysql >/dev/null 2>&1 && ! command -v mariadb >/dev/null 2>&1 && ! command -v psql >/dev/null 2>&1 && ! command -v sqlite3 >/dev/null 2>&1; then
+    print_color_message 200 0 0 "MySQL, MariaDB, PostgreSQL, or SQLite is not installed."
 fi
 
 if command -v php >/dev/null 2>&1; then
@@ -135,12 +157,31 @@ else
     print_color_message 200 0 0 "PHP is not installed."
 fi
 
+if command -v python3 >/dev/null 2>&1; then
+    print_color_message 0 200 0 "Python 3 is installed: $(print_color_message 0 117 143 "$(python3 --version 2>&1 | head -n 1)")"
+else
+    print_color_message 200 0 0 "Python 3 is not installed."
+fi
+
+if command -v node >/dev/null 2>&1; then
+    print_color_message 0 200 0 "Node.js is installed: $(print_color_message 0 117 143 "$(node --version)")"
+else
+    print_color_message 200 0 0 "Node.js is not installed."
+fi
+
 if command -v docker >/dev/null 2>&1; then
     print_color_message 0 102 204 "$(docker -v)"
     docker ps -a
 else
     print_color_message 200 0 0 "Docker is not installed."
 fi
+
+if command -v composer >/dev/null 2>&1; then
+    print_color_message 0 200 0 "Composer is installed: $(print_color_message 0 117 143 "$(composer --version | head -n 1)")"
+else
+    print_color_message 200 0 0 "Composer is not installed."
+fi
+
 ports=$(ss -tuln | awk 'NR>1 {print $5}' | cut -d ':' -f 2 | sort -n | uniq)
 for port in $ports; do
     count=$(ss -an | grep ":$port " | wc -l)
