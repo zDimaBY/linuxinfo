@@ -11,8 +11,7 @@ print_color_message() {
 
 # Check if running as root
 if [ "$(id -u)" -ne 0 ]; then
-    print_color_message 200 0 0 'Error: This script must be run as root.'
-    exit 1
+    print_color_message 200 0 0 'Error: This script is not run as root.'
 fi
 
 # Source /etc/os-release
@@ -153,20 +152,18 @@ fi
 
 if command -v php >/dev/null 2>&1; then
     print_color_message 200 215 0 "PHP $(print_color_message 79 93 149 "$(php -v | grep -Eo 'PHP ([0-9]+\.[0-9]+\.[0-9]+)' | grep -Eo '([0-9]+\.[0-9]+\.[0-9]+)')")"
-else
-    print_color_message 200 0 0 "PHP is not installed."
 fi
 
 if command -v python3 >/dev/null 2>&1; then
-    print_color_message 0 200 0 "Python 3 is installed: $(print_color_message 0 117 143 "$(python3 --version 2>&1 | head -n 1)")"
-else
-    print_color_message 200 0 0 "Python 3 is not installed."
+    print_color_message 0 200 0 "Python is installed: $(print_color_message 0 117 143 "$(python3 --version 2>&1 | head -n 1)")"
 fi
 
 if command -v node >/dev/null 2>&1; then
     print_color_message 0 200 0 "Node.js is installed: $(print_color_message 0 117 143 "$(node --version)")"
-else
-    print_color_message 200 0 0 "Node.js is not installed."
+fi
+
+if ! command -v php >/dev/null 2>&1 && ! command -v python3 >/dev/null 2>&1 && ! command -v node >/dev/null 2>&1; then
+    print_color_message 200 0 0 "PHP, Python or Node.js is not installed."
 fi
 
 if command -v docker >/dev/null 2>&1; then
