@@ -50,11 +50,14 @@ else
     exit 1
 fi
 
-source "/etc/os-release"
 # Check if the OS is supported
 case "${ID}" in
 "debian" | "ubuntu")
-    print_color_message 0 200 0 "You have a system installed: $(print_color_message 200 0 200 "${ID} ${VERSION_ID}")"
+    if [ -n "$VERSION" ]; then
+        print_color_message 0 200 0 "You have a system installed: $(print_color_message 200 0 200 "${ID} ${VERSION}")"
+    else
+        print_color_message 0 200 0 "You have a system installed: $(print_color_message 200 0 200 "${ID} ${VERSION_ID}")"
+    fi
     ;;
 "rhel" | "almalinux" | "eurolinux" | "rocky" | "centos")
     print_color_message 0 200 0 "You have a system installed: $(print_color_message 200 0 0 "${ID} ${VERSION_ID} (Red Hat-based system)")."
