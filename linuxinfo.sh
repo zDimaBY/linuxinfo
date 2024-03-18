@@ -120,6 +120,23 @@ checkInfoServerAndControlPanel() {
                     print_color_message 200 0 0 "File $fastuser_passwd_dir not found."
                 fi
                 ;;
+            "/usr/local/brainycp")
+                print_color_message 0 123 193 "BrainyCP is installed."
+                #  Memory detector
+                arr=(mysqld exim dovecot httpd nginx named brainyphp-fpm pure-ftpd memcached redis fail2ban csf xinetd sshd clamd clamsmtp-clamd spamassassin proftpd network NetworkManager postgresql tuned)
+                for t in "${arr[@]}"; do
+                    #systemctl reload $t
+                    mem=$(systemctl status "$t" | grep Memory:)
+                    echo "$mem - $t"
+                done
+
+                fpm=$(ls /lib/systemd/system | grep php | grep fpm@ | cut -d' ' -f1)
+                for t in ${fpm[@]}; do
+                    #systemctl reload "$t"
+                    mem=$(systemctl status "$t" | grep Memory:)
+                    echo "$mem - $t"
+                done
+                ;;
             esac
 
             source /etc/os-release
