@@ -91,7 +91,7 @@ checkInfoServerAndControlPanel() {
     server_IP=$(hostname -I | awk '{print $1}')
     echo -e "Hostname: $(print_color_message 0 200 0 "$server_hostname") IP: $(print_color_message 0 200 0 "$server_IP")"
 
-    for panel_dir in "/usr/local/hestia" "/usr/local/vesta" "/usr/local/mgr5" "/usr/local/cpanel" "/usr/local/fastpanel2"; do
+    for panel_dir in "/usr/local/hestia" "/usr/local/vesta" "/usr/local/mgr5" "/usr/local/cpanel" "/usr/local/fastpanel2" "/usr/local/brainycp"; do
         if [ -d "$panel_dir" ]; then
             case $panel_dir in
             "/usr/local/hestia")
@@ -125,14 +125,6 @@ checkInfoServerAndControlPanel() {
                 #  Memory detector
                 arr=(mysqld exim dovecot httpd nginx named brainyphp-fpm pure-ftpd memcached redis fail2ban csf xinetd sshd clamd clamsmtp-clamd spamassassin proftpd network NetworkManager postgresql tuned)
                 for t in "${arr[@]}"; do
-                    #systemctl reload $t
-                    mem=$(systemctl status "$t" | grep Memory:)
-                    echo "$mem - $t"
-                done
-
-                fpm=$(ls /lib/systemd/system | grep php | grep fpm@ | cut -d' ' -f1)
-                for t in ${fpm[@]}; do
-                    #systemctl reload "$t"
                     mem=$(systemctl status "$t" | grep Memory:)
                     echo "$mem - $t"
                 done
