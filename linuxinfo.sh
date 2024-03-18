@@ -124,10 +124,17 @@ checkInfoServerAndControlPanel() {
                 print_color_message 0 123 193 "BrainyCP is installed."
                 #  Memory detector
                 arr=(mysqld exim dovecot httpd nginx named brainyphp-fpm pure-ftpd memcached redis fail2ban csf xinetd sshd clamd clamsmtp-clamd spamassassin proftpd network NetworkManager postgresql tuned)
+                not_found=""
                 for t in "${arr[@]}"; do
-                    mem=$(systemctl status "$t" | grep Memory:)
-                    echo "$mem - $t"
+                    if mem=$(systemctl status "$t" 2>&1 | grep Memory:); then
+                        echo "$mem - $t"
+                    else
+                        not_found="$not_found $t"
+                    fi
                 done
+                if [ -n "$not_found" ]; then
+                    echo "Unit(s) not found: $not_found"
+                fi
                 ;;
             esac
 
